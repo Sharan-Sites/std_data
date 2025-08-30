@@ -271,6 +271,7 @@
                             <td>${studentData.StudentName}</td>
                             <td>${studentData.CgpaTotalCredits}</td>
                             <td>${studentData.CgpaTotalGained}</td>
+                            <td>${eval(studentData.CgpaTotalGained/studentData.CgpaTotalCredits)}</td>
                             <td class="success">Success</td>
                         `;
                         resultsBody.appendChild(row);
