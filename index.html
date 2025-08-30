@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Fetcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .progress {
+            margin: 20px 0;
+            background: #ecf0f1;
+            border-radius: 5px;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #3498db;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .results {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .download-btn {
+            background: #27ae60;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .download-btn:hover {
+            background: #219653;
+        }
+        
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Data Fetcher</h1>
+        <p class="description">Fetch student data from SBTET Telangana API by PIN series</p>
+        
+        <div class="form-group">
+            <label for="pinPrefix">PIN Prefix (e.g., 22005-CE-)</label>
+            <input type="text" id="pinPrefix" value="22005-CE-" placeholder="Enter PIN prefix">
+        </div>
+        
+        <div class="form-group">
+            <label for="startNumber">Starting Number</label>
+            <input type="number" id="startNumber" value="1" min="1" max="999">
+        </div>
+        
+        <div class="form-group">
+            <label for="count">Number of PINs to fetch</label>
+            <input type="number" id="count" value="10" min="1" max="100">
+        </div>
+        
+        <button id="fetchBtn">Fetch Data</button>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div class="results">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>PIN</th>
+                        <th>Student Name</th>
+                        <th>Total Credits</th>
+                        <th>Credits Gained</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                    <!-- Results will be added here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="summary" id="summary">
+            <strong>Summary:</strong> 
+            <span id="successCount">0</span> successful, 
+            <span id="errorCount">0</span> errors
+        </div>
+        
+        <button id="downloadBtn" class="download-btn">Download Results as CSV</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fetchBtn = document.getElementById('fetchBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const progressBar = document.getElementById('progressBar');
+            const statusDiv = document.getElementById('status');
+            const resultsBody = document.getElementById('resultsBody');
+            const successCount = document.getElementById('successCount');
+            const errorCount = document.getElementById('errorCount');
+            
+            let results = [];
+            
+            fetchBtn.addEventListener('click', async function() {
+                const pinPrefix = document.getElementById('pinPrefix').value;
+                const startNum = parseInt(document.getElementById('startNumber').value);
+                const count = parseInt(document.getElementById('count').value);
+                
+                // Validate inputs
+                if (!pinPrefix) {
+                    showStatus('Please enter a PIN prefix', 'error');
+                    return;
+                }
+                
+                if (isNaN(startNum) || startNum < 1) {
+                    showStatus('Please enter a valid starting number', 'error');
+                    return;
+                }
+                
+                if (isNaN(count) || count < 1 || count > 100) {
+                    showStatus('Please enter a valid count between 1 and 100', 'error');
+                    return;
+                }
+                
+                // Reset UI
+                results = [];
+                resultsBody.innerHTML = '';
+                successCount.textContent = '0';
+                errorCount.textContent = '0';
+                downloadBtn.style.display = 'none';
+                
+                // Disable button during fetch
+                fetchBtn.disabled = true;
+                fetchBtn.textContent = 'Fetching Data...';
+                
+                // Fetch data for each PIN
+                for (let i = 0; i < count; i++) {
+                    const pinNumber = startNum + i;
+                    const pin = `${pinPrefix}${pinNumber.toString().padStart(3, '0')}`;
+                    
+                    // Update progress
+                    progressBar.style.width = `${((i + 1) / count) * 100}%`;
+                    showStatus(`Fetching data for ${pin} (${i + 1}/${count})`, '');
+                    
+                    try {
+                        const studentData = await getStudentData(pin);
+                        results.push(studentData);
+                        
+                        // Add to table
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${pin}</td>
+                            <td>${studentData.StudentName}</td>
+                            <td>${studentData.CgpaTotalCredits}</td>
+                            <td>${studentData.CgpaTotalGained}</td>
+                            <td class="success">Success</td>
+                        `;
+                        resultsBody.appendChild(row);
+                        
+                        // Update success count
+                        successCount.textContent = parseInt(successCount.textContent) + 1;
+                    } catch (error) {
+                        results.push({
+                            Pin: pin,
+                            StudentName: 'Error',
+                            CgpaTotalCredits: 'N/A',
+                            CgpaTotalGained: 'N/A',
+                            Error: error.message
+                        });
+                        
+                        // Add to table
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${pin}</td>
+                            <td>Error</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="error">${error.message}</td>
+                        `;
+                        resultsBody.appendChild(row);
+                        
+                        // Update error count
+                        errorCount.textContent = parseInt(errorCount.textContent) + 1;
+                    }
+                    
+                    // Add a small delay to avoid overwhelming the server
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Enable button and show download option
+                fetchBtn.disabled = false;
+                fetchBtn.textContent = 'Fetch Data';
+                showStatus('Data fetching completed!', 'success');
+                downloadBtn.style.display = 'block';
+            });
+            
+            downloadBtn.addEventListener('click', function() {
+                // Convert results to CSV
+                let csv = 'PIN,Student Name,Total Credits,Credits Gained,Status\n';
+                
+                results.forEach(item => {
+                    csv += `"${item.Pin}","${item.StudentName}","${item.CgpaTotalCredits}","${item.CgpaTotalGained}","${item.Error || 'Success'}"\n`;
+                });
+                
+                // Create download link
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'student_results.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            async function getStudentData(pin) {
+                const url = `https://www.sbtet.telangana.gov.in/api/api/Results/GetConsolidatedResults?Pin=${pin}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'application/json, text/plain, */*',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Handle case where API returns a string instead of object
+                if (typeof data === 'string') {
+                    try {
+                        // Try to parse the string as JSON
+                        const parsedData = JSON.parse(data);
+                        return extractStudentInfo(parsedData, pin);
+                    } catch (e) {
+                        throw new Error('API returned invalid data format');
+                    }
+                }
+                
+                return extractStudentInfo(data, pin);
+            }
+            
+            function extractStudentInfo(data, pin) {
+                let result = {
+                    Pin: pin,
+                    StudentName: 'N/A',
+                    CgpaTotalCredits: 'N/A',
+                    CgpaTotalGained: 'N/A'
+                };
+                
+                // Extract data from Table (basic student info)
+                if (data.Table && Array.isArray(data.Table) && data.Table.length > 0) {
+                    result.StudentName = data.Table[0].StudentName || 'N/A';
+                }
+                
+                // Extract data from Table1 (academic performance)
+                if (data.Table1 && Array.isArray(data.Table1) && data.Table1.length > 0) {
+                    result.CgpaTotalCredits = data.Table1[0].CgpaTotalCredits || 
+                                            data.Table1[0].TotalMaxCredits || 'N/A';
+                    result.CgpaTotalGained = data.Table1[0].CgpaTotalGained || 
+                                           data.Table1[0].CreditsGained || 'N/A';
+                }
+                
+                return result;
+            }
+            
+            function showStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'status';
+                
+                if (type === 'success') {
+                    statusDiv.classList.add('success');
+                } else if (type === 'error') {
+                    statusDiv.classList.add('error');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
