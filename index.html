@@ -185,6 +185,7 @@
             <table id="resultsTable">
                 <thead>
                     <tr>
+                        <th>College Name</th>
                         <th>PIN</th>
                         <th>Student Name</th>
                         <th>Total Credits</th>
@@ -268,6 +269,7 @@
                         // Add to table
                         const row = document.createElement('tr');
                         row.innerHTML = `
+                            <td>${studentData.CenterName}</td>
                             <td>${pin}</td>
                             <td>${studentData.StudentName}</td>
                             <td>${studentData.CgpaTotalCredits}</td>
@@ -293,6 +295,7 @@
                         row.innerHTML = `
                             <td>${pin}</td>
                             <td>Error 😵‍💫</td>
+                            <td>N/A 😭</td>
                             <td>N/A 😭</td>
                             <td>N/A 😭</td>
                             <td>N/A 😭</td>
@@ -370,12 +373,14 @@
                     Pin: pin,
                     StudentName: 'N/A',
                     CgpaTotalCredits: 'N/A',
-                    CgpaTotalGained: 'N/A'
+                    CgpaTotalGained: 'N/A',
+                    CenterName: 'N/A'
                 };
                 
                 // Extract data from Table (basic student info)
                 if (data.Table && Array.isArray(data.Table) && data.Table.length > 0) {
                     result.StudentName = data.Table[0].StudentName || 'N/A';
+                    result.CenterName= data.Table[0].CenterName || 'N/A';
                 }
                 
                 // Extract data from Table1 (academic performance)
