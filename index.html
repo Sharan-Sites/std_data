@@ -281,8 +281,7 @@
                         results.push({
                             Pin: pin,
                             StudentName: 'Error',
-                            CgpaTotalCredits: 'N/A',
-                            CgpaTotalGained: 'N/A',
+                            CGPA: 'N/A',
                             Error: error.message
                         });
                         
@@ -317,7 +316,7 @@
                 let csv = 'PIN,Student Name,Total Credits,Credits Gained,Status\n';
                 
                 results.forEach(item => {
-                    csv += `"${item.Pin}","${item.StudentName}","${item.CgpaTotalCredits}","${item.CgpaTotalGained}","${item.Error || 'Success'}"\n`;
+                    csv += `"${item.Pin}","${item.StudentName}","${item.CGPA}",${item.Error || 'Success'}"\n`;
                 });
                 
                 // Create download link
@@ -366,8 +365,7 @@
                 let result = {
                     Pin: pin,
                     StudentName: 'N/A',
-                    CgpaTotalCredits: 'N/A',
-                    CgpaTotalGained: 'N/A',
+                    CGPA: 'N/A',
                     CenterName: 'N/A'
                 };
                 
@@ -375,13 +373,14 @@
                 if (data.Table && Array.isArray(data.Table) && data.Table.length > 0) {
                     result.StudentName = data.Table[0].StudentName || 'N/A';
                     result.CenterName= data.Table[0].CenterName || 'N/A';
+                    result.CGPA= data.Table[0].CGPA || 'N/A 🤡';
                 }
                 
                 // Extract data from Table1 (academic performance)
                 if (data.Table1 && Array.isArray(data.Table1) && data.Table1.length > 0) {
-                    result.CgpaTotalCredits = data.Table1[0].CgpaTotalCredits || 
+                    result.CGPATotalCredits = data.Table1[0].CGPATotalCredits || 
                                             data.Table1[0].TotalMaxCredits || 'N/A';
-                    result.CgpaTotalGained = data.Table1[0].CgpaTotalGained || 
+                    result.CGPATotalGained = data.Table1[0].CGPATotalGained || 
                                            data.Table1[0].CreditsGained || 'N/A';
                 }
                 
