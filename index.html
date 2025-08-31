@@ -156,7 +156,7 @@
 <body>
     <div class="container">
         <h1>Student Data Fetcher</h1>
-        <p class="description">Fetch student data from SBTET Telangana API by PIN series</p>
+        <p class="description">Fetch student data from SBTET Telangana API by PIN OF C21 series</p>
         
         <div class="form-group">
             <label for="pinPrefix">PIN Prefix (e.g., 22005-CE-)</label>
@@ -188,8 +188,6 @@
                         <th>College Name</th>
                         <th>PIN</th>
                         <th>Student Name</th>
-                        <th>Total Credits</th>
-                        <th>Credits Gained</th>
                          <th>CGPA</th>
                         <th>Status</th>
                     </tr>
@@ -272,9 +270,7 @@
                             <td>${studentData.CenterName}</td>
                             <td>${pin}</td>
                             <td>${studentData.StudentName}</td>
-                            <td>${studentData.CgpaTotalCredits}</td>
-                            <td>${studentData.CgpaTotalGained}</td>
-                            <td>${eval(studentData.CgpaTotalGained/studentData.CgpaTotalCredits)}</td>
+                            <td>${studentData.CGPA})}</td>
                             <td class="success">Success 😊</td>
                         `;
                         resultsBody.appendChild(row);
@@ -295,8 +291,6 @@
                         row.innerHTML = `
                             <td>${pin}</td>
                             <td>Error 😵‍💫</td>
-                            <td>N/A 😭</td>
-                            <td>N/A 😭</td>
                             <td>N/A 😭</td>
                             <td>N/A 😭</td>
                             <td class="error">${error.message} 😵</td>
